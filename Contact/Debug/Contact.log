@@ -1,0 +1,3 @@
+﻿  contact.c
+D:\C-code\Contact\contact.c(207,9): warning C4477: “scanf”: 格式字符串“%s”需要类型“char *”的参数，但可变参数 1 拥有了类型“int *”
+  Contact.vcxproj -> D:\C-code\Contact\Debug\Contact.exe
