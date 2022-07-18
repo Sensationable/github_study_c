@@ -4,6 +4,7 @@
 #include<assert.h>
 #include<stdlib.h>
 
+
 #define DEFAULT_SZ 3
 #define INC_SZ 2
 #define MAX 100
@@ -59,3 +60,12 @@ void ModifyContact(Contact* pc);
 
 //联系人按照名字排序
 void SortContact(Contact* pc);
+
+//销毁通讯录
+void DestroyContact(Contact* pc);
+
+//保存通讯录到文件
+void SaveContact(Contact* pc);
+
+//加载文件信息到通讯录中
+void LoadContact(Contact* pc);

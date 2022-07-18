@@ -1,8 +1,50 @@
 # define _CRT_SECURE_NO_WARNINGS 1
 #include"contact.h"
 
+//通讯录增容（检查通讯录是否需要增容，如果需要，就进行增容）
+void Check_capacity(Contact* pc)
+{
+	if (pc->count == pc->capacity)
+	{
+		PeoInof* ptr = (PeoInof*)realloc(pc->data, (pc->capacity + INC_SZ) * sizeof(PeoInof));
+		if (ptr == NULL)
+		{
+			printf("AddContact::%s\n", strerror(errno));
+			return;
+		}
+		else
+		{
+			pc->data = ptr;
+			pc->capacity += INC_SZ;
+			//此处可开可不开，开了可以提示扩容成功
+			//printf("通讯录扩容成功\n");
+		}
+	}
+}
+
+//加载文件信息到通讯录中
+void LoadContact(Contact* pc)
+{
+	assert(pc);
+	FILE* pfRead = fopen("contact.txt","rb");
+	if (pfRead == NULL)
+	{
+		perror("LoadContact");
+		return;
+	}
+	PeoInof tmp = { 0 };//先创建临时变量，把读入的数据先放入临时变量，然后进行容量检查（不够进行扩容），再把tmp的数据存入通讯录
+	while (fread(&tmp, sizeof(PeoInof), 1, pfRead) == 1)
+	{
+		Check_capacity(pc); // 通讯录增容（检查通讯录是否需要增容，如果需要，就进行增容）
+		pc->data[pc->count] = tmp;
+		pc->count++;
+	}
+	fclose(pfRead);
+	pfRead = NULL;
+}
 
 //初始化通讯录
+
 //1.静态版本
 //void InitContact(Contact* pc)
 //{
@@ -23,6 +65,8 @@ int InitContact(Contact* pc)
 		return 1;
 	}
 	pc->capacity = DEFAULT_SZ;
+	//加载文件信息到通讯录中
+	LoadContact(pc);
     return 0;
 }
 
@@ -52,24 +96,6 @@ int InitContact(Contact* pc)
 //}
 
 //2.动态版本
-void Check_capacity(Contact* pc)
-{
-	if (pc->count == pc->capacity)
-	{
-		PeoInof* ptr = (PeoInof*)realloc(pc->data, (pc->capacity + INC_SZ) * sizeof(PeoInof));
-		if (ptr == NULL)
-		{
-			printf("AddContact::%s\n", strerror(errno));
-			return;
-		}
-		else
-		{
-			pc->data = ptr;
-			pc->capacity += INC_SZ;
-			printf("通讯录扩容成功\n");
-		}
-	}
-}
 void AddContact(Contact* pc)
 {
 	assert(pc);
@@ -95,7 +121,7 @@ void ShowContact(const Contact* pc)
 	assert(pc);
 	if (pc->count == 0)
 	{
-		printf("通讯录无内容，无法打印");
+		printf("通讯录无内容，无法打印\n");
 		return;
 	}
 	printf("%-20s\t%-5s\t%-5s\t%-12s\t%-30s\n","姓名","年龄","性别","电话","地址");//%s 打印字符串，后面的都为字符串
@@ -246,3 +272,32 @@ void SortContact(Contact* pc)
 	}
 }
 
+
+//销毁通讯录
+void DestroyContact(Contact* pc)
+{
+	assert(pc);
+	free(pc->data);
+	pc->data = NULL;
+}
+
+//保存通讯录到文件
+void SaveContact(Contact* pc)
+{
+	assert(pc);
+	FILE* pfWrite = fopen("contact.txt","wb");
+	if (pfWrite == NULL)
+	{
+		perror("SaveContact");
+		return;
+	}
+	//写文件-二进制形式
+	int i = 0;
+	for (i = 0;i < pc->count;i++)
+	{
+		fwrite(pc->data+i, sizeof(PeoInof), 1, pfWrite);//pc->data+i  是地址，函数需要地址，不可以用pc->data[i]
+	}
+	fclose(pfWrite);
+	pfWrite = NULL;
+
+}
